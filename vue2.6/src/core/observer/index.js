@@ -34,24 +34,47 @@ export function toggleObserving(value: boolean) {
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
  */
+
+/**
+ * 1.
+ * 每个被观察对象附加的观察者类
+ * 对象。一旦连接上，观察者将转换目标
+ * 对象的属性键到getter/setter
+ * 收集依赖关系并分发更新。
+ */
 export class Observer {
+  // 2. class直接定义变量， 相当于 function Observer(){}  ;Observer.value;Observer.dep; Observer.vmCount;
   value: any;
   dep: Dep;
   vmCount: number; // number of vms that have this object as root $data
 
   constructor(value: any) {
+    // 3.存储 value
     this.value = value;
+
+    // 4.创建一个依赖收集者
     this.dep = new Dep();
+
+    // 5. 计数 把这个数据当成根data对象的实例数量
     this.vmCount = 0;
+
+    // 6. 给 data 设置一个 __ob__ 属性，值为 Observer 实例
+    // 这个地方可以知道为什么我们 Vue中的数据，打印出来会带有 '__ob__'
     def(value, "__ob__", this);
+
+    // 7. 如果是数组 （数组最后再讲，先说对象）
     if (Array.isArray(value)) {
+      // 7.1 可以使用对象的 __proto__ 属性
       if (hasProto) {
         protoAugment(value, arrayMethods);
       } else {
+        // 7.2 不可以使用对象的 __proto__ 属性
         copyAugment(value, arrayMethods, arrayKeys);
       }
+      // 7.3执行 observeArray
       this.observeArray(value);
     } else {
+      // 8. 其他情况，对象
       this.walk(value);
     }
   }
@@ -61,7 +84,16 @@ export class Observer {
    * getter/setters. This method should only be called when
    * value type is Object.
    */
+
+  /**
+   * 9.
+   * 遍历所有属性并将其转换为
+   * getter setter。此方法只应在以下情况调用
+   * 值类型为Object。
+   */
+
   walk(obj: Object) {
+    // 10. 调用对象的属性，循环执行 defineReactive(对象, 对象的属性名)
     const keys = Object.keys(obj);
     for (let i = 0; i < keys.length; i++) {
       defineReactive(obj, keys[i]);
@@ -71,7 +103,9 @@ export class Observer {
   /**
    * Observe a list of Array items.
    */
+  // 11.观察Array项
   observeArray(items: Array<any>) {
+    // 12. 遍历数组的每一项，全部都observe一下。
     for (let i = 0, l = items.length; i < l; i++) {
       observe(items[i]);
     }
@@ -84,8 +118,17 @@ export class Observer {
  * Augment a target Object or Array by intercepting
  * the prototype chain using __proto__
  */
+/**
+ * 1.
+ * 通过拦截来增强目标对象或数组
+ * 使用原型链的 __proto__
+ */
+
+// 这里的函数名可以翻译为 原始增加
 function protoAugment(target, src: Object) {
   /* eslint-disable no-proto */
+
+  // 2. 这里做的操作就是，把数组的原型指向了我们定义的新对象`arrayMethod` 。新对象的原型是数组正式的原型。
   target.__proto__ = src;
   /* eslint-enable no-proto */
 }
@@ -94,10 +137,21 @@ function protoAugment(target, src: Object) {
  * Augment a target Object or Array by defining
  * hidden properties.
  */
+/**
+ * 3.
+ * 通过定义来扩大目标对象或数组
+ * 隐藏属性
+ */
+
 /* istanbul ignore next */
+
+// 这里的函数名可以翻译为 拷贝增加
 function copyAugment(target: Object, src: Object, keys: Array<string>) {
+  // 4. 遍历我们定义的 7 种方法；
   for (let i = 0, l = keys.length; i < l; i++) {
+    // 4.1 拿到 方法名
     const key = keys[i];
+    // 4.2 给目标数组添加方法，
     def(target, key, src[key]);
   }
 }
@@ -145,40 +199,57 @@ export function observe(value: any, asRootData: ?boolean): Observer | void {
   // 10.返回 ob
   return ob;
 }
+
 /**
  * Define a reactive property on an Object.
  */
+// 1. 在对象上定义响应式属性
 export function defineReactive(
-  obj: Object,
-  key: string,
-  val: any,
-  customSetter?: ?Function,
-  shallow?: boolean
+  obj: Object, // 传入的 对象：
+  key: string, // 对象的 属性;
+  val: any, //对象的属性值，在没有 getset的时候，直接返回对应的值。
+  customSetter?: ?Function, // 自定义 setter
+  shallow?: boolean // 是否是 浅层的响应式
 ) {
+  // 2. new Dep() , 定义个对象用来 收集依赖。
   const dep = new Dep();
 
+  // 3. Object.getOwnPropertyDescriptor() 方法返回指定对象上一个自有属性对应的属性描述符。  简单来说，拿到这个属性的配置。
   const property = Object.getOwnPropertyDescriptor(obj, key);
+  // 4. 如果配置存在，如果 configurable===false  (该属性不可修改)，直接 return
   if (property && property.configurable === false) {
     return;
   }
 
   // cater for pre-defined getter/setters
+  // 5. 满足预定义的getter/setter
   const getter = property && property.get;
   const setter = property && property.set;
   if ((!getter || setter) && arguments.length === 2) {
+    // 6. 如果：没有getter或者有setter；而且传入的参数长度为2。设置第三个参数 val为
     val = obj[key];
   }
 
+  // 7. 不是浅层的，监听 val;  childOb是布尔值
   let childOb = !shallow && observe(val);
   Object.defineProperty(obj, key, {
-    enumerable: true,
-    configurable: true,
+    enumerable: true, // 可以枚举
+    configurable: true, // 可以配置
+
+    // 8.定义 get
     get: function reactiveGetter() {
+      // 8.1 拿到真实的值
       const value = getter ? getter.call(obj) : val;
+
+      // 8.2 收集依赖
       if (Dep.target) {
         dep.depend();
+
+        // 8.3 子对象
         if (childOb) {
           childOb.dep.depend();
+
+          // 数组处理
           if (Array.isArray(value)) {
             dependArray(value);
           }
@@ -186,24 +257,39 @@ export function defineReactive(
       }
       return value;
     },
+
+    // 9.定义 set
     set: function reactiveSetter(newVal) {
+      // 9.1 真实的值
       const value = getter ? getter.call(obj) : val;
       /* eslint-disable no-self-compare */
+
+      // 9.2 `newVal === value` 值没有改变的时候不触发后续逻辑；   (newVal !== newVal && value !== value) 这是什么意思? 防止 NaN == NaN (false) https://github.com/vuejs/vue/issues/4236
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return;
       }
       /* eslint-enable no-self-compare */
+
+      // 9.3 自定义 Setter
       if (process.env.NODE_ENV !== "production" && customSetter) {
         customSetter();
       }
       // #7981: for accessor properties without setter
+      // 9.4 对于没有setter的访问器属性
       if (getter && !setter) return;
+
+      // 9.5 有 setter 走 setter
       if (setter) {
         setter.call(obj, newVal);
       } else {
+        // 9.6 没有则直接赋值给 val
         val = newVal;
       }
+
+      // 10. 处理子元素
       childOb = !shallow && observe(newVal);
+
+      // 11. 通知订阅者。
       dep.notify();
     },
   });
@@ -214,26 +300,43 @@ export function defineReactive(
  * triggers change notification if the property doesn't
  * already exist.
  */
+
+/**
+ * 设置一个对象的属性。添加新属性和
+ * 如果属性没有更改，则触发更改通知
+ * 已经存在。
+ */
 export function set(target: Array<any> | Object, key: any, val: any): any {
   if (
     process.env.NODE_ENV !== "production" &&
+    // 如果是 undefined 或 null; 或者是原始值
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
       `Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`
     );
   }
+
+  // 如果是数组
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // Math.max() 函数返回一组数中的最大值。
     target.length = Math.max(target.length, key);
     target.splice(key, 1, val);
     return val;
   }
+
+  // 如果 key 值已经存在对象中，且不是原型的属性；
   if (key in target && !(key in Object.prototype)) {
     target[key] = val;
     return val;
   }
+
+  // 获取到 Observer 实例上的 ob
   const ob = (target: any).__ob__;
+
+  // 如果是vue实例，或者是Vue实例的根数据对象 （可以理解 this.$data 就是根数据）
   if (target._isVue || (ob && ob.vmCount)) {
+    // 如果是 undefined 或 null; 或者是原始值
     process.env.NODE_ENV !== "production" &&
       warn(
         "Avoid adding reactive properties to a Vue instance or its root $data " +
@@ -241,11 +344,18 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
       );
     return val;
   }
+
+  // 没有 ob ,说明数据不是响应式的
   if (!ob) {
+    // 直接赋值即可
     target[key] = val;
     return val;
   }
+
+  // 前置的if都不满足了。说明用户在响应式数据上新增了一个属性，这种情况需要追踪新增的属性的变化。
   defineReactive(ob.value, key, val);
+
+  // 依赖触发， 变化通知
   ob.dep.notify();
   return val;
 }
@@ -256,16 +366,21 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
 export function del(target: Array<any> | Object, key: any) {
   if (
     process.env.NODE_ENV !== "production" &&
+    // 如果是 undefined 或 null; 或者是原始值 ---同Vue.$set
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
       `Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`
     );
   }
+
+  // 数组，直接改
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1);
     return;
   }
+
+  // ---同Vue.$set 排除Vue实例 和 根对象
   const ob = (target: any).__ob__;
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== "production" &&
@@ -275,13 +390,21 @@ export function del(target: Array<any> | Object, key: any) {
       );
     return;
   }
+
+  // 如果 属性不是自身的属性，直接 return
   if (!hasOwn(target, key)) {
     return;
   }
+
+  // 删除对应的key
   delete target[key];
+
+  // 不是响应式的不做处理（这个地方可以理解为，浅层监听的 watch，有些深层的属性不需要watch，就会走这个情况）
   if (!ob) {
     return;
   }
+
+  // 手动触发 ！！ 有作者在想，直接在代码中 `.__ob__`  手动通知不就ok了？ 不建议这样做、
   ob.dep.notify();
 }
 

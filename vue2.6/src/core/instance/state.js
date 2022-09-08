@@ -359,6 +359,7 @@ function createWatcher(
   return vm.$watch(expOrFn, handler, options);
 }
 
+// 与数据相关的实例方法 有三个 watch set delete
 export function stateMixin(Vue: Class<Component>) {
   // flow somehow has problems with directly declared definition object
   // when using Object.defineProperty, so we have to procedurally build up
