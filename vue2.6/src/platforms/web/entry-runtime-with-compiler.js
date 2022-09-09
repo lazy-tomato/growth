@@ -137,6 +137,7 @@ function getOuterHTML(el: Element): string {
   }
 }
 
+// 这里注册了全局的Vue.compile
 Vue.compile = compileToFunctions;
 
 export default Vue;
