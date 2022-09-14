@@ -23,5 +23,5 @@ Object.defineProperty(Vue, "FunctionalRenderContext", {
 
 Vue.version = "__VERSION__";
 
-// 1.导出vue
+// 1. 默认输出 Vue
 export default Vue;

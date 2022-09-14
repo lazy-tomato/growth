@@ -213,16 +213,25 @@ export default class Watcher {
   /**
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
+   * 评估观察者的价值。
+   * 这只适用于懒惰的观察者。
    */
   evaluate() {
+    // 执行get，重新计算值
     this.value = this.get();
+
+    // 设置 diety 为 false
     this.dirty = false;
   }
 
   /**
    * Depend on all deps collected by this watcher.
+   * 依赖于这个观察者收集的所有深度。
    */
   depend() {
+    // this.deps属性保存了所有状态的dep实例，每个dep实例保存了它的所有依赖
+    // 简单来说，就是遍历了 this.deps, 将当前的 watcher放到所有的依赖项中。
+
     let i = this.deps.length;
     while (i--) {
       this.deps[i].depend();

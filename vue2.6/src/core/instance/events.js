@@ -9,13 +9,16 @@ import {
 } from "../util/index";
 import { updateListeners } from "../vdom/helpers/index";
 
-// 这个会在 _init中嗲用
+// 这个会在 _init中调用
 export function initEvents(vm: Component) {
-  // 创建一个空对象 _events 用于后续的存储事件，
+  // 创建一个空对象 _events 用于存储事件，后续所有使用 vm.$on 注册的事件都会保留在这个属性中。
   vm._events = Object.create(null);
   vm._hasHookEvent = false;
   // init parent attached events
+  // 初始化 父组件注册的事件
   const listeners = vm.$options._parentListeners;
+
+  // 也就是说，父组件注册了子组件的事件，就会存储在  vm.$options._parentListeners中，如果存在，则调用 updateComponentListeners
   if (listeners) {
     updateComponentListeners(vm, listeners);
   }
@@ -24,14 +27,17 @@ export function initEvents(vm: Component) {
 let target: any;
 
 function add(event, fn) {
+  // 添加
   target.$on(event, fn);
 }
 
 function remove(event, fn) {
+  // 减少
   target.$off(event, fn);
 }
 
 function createOnceHandler(event, fn) {
+  // 仅触发一次
   const _target = target;
   return function onceHandler() {
     const res = fn.apply(null, arguments);
@@ -41,6 +47,7 @@ function createOnceHandler(event, fn) {
   };
 }
 
+// 更新组件的监听
 export function updateComponentListeners(
   vm: Component,
   listeners: Object,

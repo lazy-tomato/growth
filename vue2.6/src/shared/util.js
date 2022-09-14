@@ -152,6 +152,7 @@ export function hasOwn(obj: Object | Array<*>, key: string): boolean {
  */
 // 创建纯函数的缓存版本。
 export function cached<F: Function>(fn: F): F {
+  //一个空对象
   const cache = Object.create(null);
   return (function cachedFn(str: string) {
     const hit = cache[str];
@@ -161,6 +162,7 @@ export function cached<F: Function>(fn: F): F {
 
 /**
  * Camelize a hyphen-delimited string.
+ * Camelize以连字符分隔的字符串。
  */
 const camelizeRE = /-(\w)/g;
 export const camelize = cached((str: string): string => {

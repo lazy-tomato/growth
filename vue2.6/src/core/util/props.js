@@ -19,31 +19,42 @@ type PropOptions = {
 };
 
 export function validateProp(
-  key: string,
-  propOptions: Object,
-  propsData: Object,
-  vm?: Component
+  key: string, // 属性名
+  propOptions: Object, // 子组件用户设置的props选项
+  propsData: Object, // 父组件或用户提供的props
+  vm?: Component // this
 ): any {
+  // 1.存储当前key的 props 选项 （存配置）
   const prop = propOptions[key];
 
-  // 不是自身的属性
+  // 2.当前key在用户提供的propsData是否存在  （是否传递了数据） true没传数据
   const absent = !hasOwn(propsData, key);
+
+  // 3. 拿到父组件传递的数据  （存数据）
   let value = propsData[key];
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type);
+
+  //
   if (booleanIndex > -1) {
+    // 没有传递数据，且也没有默认的default
     if (absent && !hasOwn(prop, "default")) {
+      // 值默认为 false
       value = false;
     } else if (value === "" || value === hyphenate(key)) {
       // only cast empty string / same name to boolean if
       // boolean has higher priority
+      // 只将空字符串/同名转换为布尔值
+      // 布尔值优先级更高
       const stringIndex = getTypeIndex(String, prop.type);
       if (stringIndex < 0 || booleanIndex < stringIndex) {
         value = true;
       }
     }
   }
+
   // check default value
+  // 检查默认值
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key);
     // since the default value is a fresh copy,
@@ -53,13 +64,18 @@ export function validateProp(
     observe(value);
     toggleObserving(prevShouldObserve);
   }
+
+  // 验证失败，提出警告
   if (
     process.env.NODE_ENV !== "production" &&
     // skip validation for weex recycle-list child component props
     !(__WEEX__ && isObject(value) && "@binding" in value)
   ) {
+    // 断言 props
     assertProp(prop, key, value, vm, absent);
   }
+
+  // 返回真实的vue
   return value;
 }
 
@@ -108,38 +124,75 @@ function getPropDefaultValue(
  * Assert whether a prop is valid.
  */
 function assertProp(
-  prop: PropOptions,
-  name: string,
-  value: any,
-  vm: ?Component,
-  absent: boolean
+  prop: PropOptions, // prop的配置
+  name: string, //  prop选项的key
+  value: any, // prop数据
+  vm: ?Component, // this
+  absent: boolean // 传入的数据中 是否不存在 key 属性
 ) {
+  // 校验是否必填 但是为船只
   if (prop.required && absent) {
     warn('Missing required prop: "' + name + '"', vm);
     return;
   }
+
+  // 非必填且没有传入值的情况直接return  (注意一下这里是双等于， null或者undefined都会为true)
   if (value == null && !prop.required) {
     return;
   }
+
+  // 类型
   let type = prop.type;
+
+  //!type || type === true; 如何理解？
+  // 首先执行 `!type` 再执行 `type === true`
+  // 当 `!type` 为true，则执行 `type === true`
+  // 简单来说:
+  // 1. 如果没有传入类型，则  !false为true，执行`type === true`，此时valid为true；
+  // 2. 如果传入了类型，数组或者对象类型，例如 !['string','array']为false , 此时valid 为 false；
   let valid = !type || type === true;
+
+  // 用来保存 type的列表
   const expectedTypes = [];
+
+  // 存在需要校验的类型
+  /* 
+      type: Object,
+      // 对象或数组默认值必须从一个工厂函数获取
+      default: function () {
+        return { message: 'hello' }
+      }
+      
+  */
   if (type) {
+    // 不是数组，转换成数组
     if (!Array.isArray(type)) {
       type = [type];
     }
+
+    // 遍历
     for (let i = 0; i < type.length && !valid; i++) {
+      // assertType校验 value,返回一个对象，对象两个属性，valid为是否校验成功，后者表示类型
       const assertedType = assertType(value, type[i], vm);
+
+      // 存储
       expectedTypes.push(assertedType.expectedType || "");
+
+      // 校验成功
       valid = assertedType.valid;
     }
   }
 
+  // 是否有类型
   const haveExpectedTypes = expectedTypes.some((t) => t);
+
+  // 校验不成功，报错
   if (!valid && haveExpectedTypes) {
     warn(getInvalidTypeMessage(name, value, expectedTypes), vm);
     return;
   }
+
+  // 自定义校验器
   const validator = prop.validator;
   if (validator) {
     if (!validator(value)) {

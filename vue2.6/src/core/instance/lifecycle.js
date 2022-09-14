@@ -30,18 +30,25 @@ export function setActiveInstance(vm: Component) {
 }
 
 export function initLifecycle(vm: Component) {
+  // 如果是 _开头，则可以理解为是提供给内部使用的内部属性。如果是 $开头是提供给用户使用的外部属性。
+
   const options = vm.$options;
 
   // locate first non-abstract parent
+  // 找出第一个非抽象父类
   let parent = options.parent;
   if (parent && !options.abstract) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent;
     }
+
+    // 这里是子组件主动添加到父组件的$children
     parent.$children.push(vm);
   }
 
   vm.$parent = parent;
+
+  // vm.$root表示当前组件树的根 Vue.js
   vm.$root = parent ? parent.$root : vm;
 
   vm.$children = [];
@@ -413,6 +420,7 @@ export function deactivateChildComponent(vm: Component, direct?: boolean) {
   }
 }
 
+// 回调函数钩子
 export function callHook(vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget();
@@ -420,6 +428,7 @@ export function callHook(vm: Component, hook: string) {
   const info = `${hook} hook`;
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
+      // 使用 trycatch 的形式包裹对应函数。
       invokeWithErrorHandling(handlers[i], vm, null, vm, info);
     }
   }

@@ -15,6 +15,7 @@ let uid = 0;
 // initMixin 会在 `/src/core/instance/index.js`中执行 (传入的是 Vue构造函数)
 export function initMixin(Vue: Class<Component>) {
   // Vue 原型上添加 _init方法
+  // 如果是 _开头，则可以理解为是提供给内部使用的内部属性。如果是 $开头是提供给用户使用的外部属性。
   Vue.prototype._init = function (options?: Object) {
     // 1. 存储当前的this,到变量 vm 上
     const vm: Component = this;
@@ -59,14 +60,30 @@ export function initMixin(Vue: Class<Component>) {
     // 4.开始初始化 例如 生命周期，事件，Render state....
     // expose real self
     vm._self = vm;
+
+    // initLifecycle函数，向实例中挂载属性。
     initLifecycle(vm);
+
+    // initEvents  主要做了：  1.定义属性_events;  2.初始化了父组件注册了的子组件
     initEvents(vm);
     initRender(vm);
     callHook(vm, "beforeCreate");
+
+    // initInjections 主要做了：初始化inject, 本质上是，匹配 子组件到上层组件的的_provided 和 inject是否有同名属性。
     initInjections(vm); // resolve injections before data/props
+
+    // initState 主要做了： 依次触发： props methods data computed watch
     initState(vm);
+
+    // initProvide 主要做了：初始化 provide
     initProvide(vm); // resolve provide after data/props
     callHook(vm, "created");
+
+    // 主要分为四个阶段;
+    // 初始化阶段;
+    // 模板编译阶段;
+    // 挂载阶段;
+    // 卸载阶段;
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== "production" && config.performance && mark) {
@@ -75,7 +92,7 @@ export function initMixin(Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag);
     }
 
-    //
+    // 如果元素存在，就开始挂载
     if (vm.$options.el) {
       vm.$mount(vm.$options.el);
     }
