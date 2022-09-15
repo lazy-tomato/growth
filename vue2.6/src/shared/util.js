@@ -171,6 +171,7 @@ export const camelize = cached((str: string): string => {
 
 /**
  * Capitalize a string.
+ * 首字母大写
  */
 export const capitalize = cached((str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);

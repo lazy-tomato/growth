@@ -453,7 +453,12 @@ export function mergeOptions(
  * Resolve an asset.
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
+ * 解决一个资产。
+ * 使用此函数是因为子实例需要访问
+ * 到其祖先链中定义的资产。
  */
+
+// 查找过滤器等数据
 export function resolveAsset(
   options: Object,
   type: string,
@@ -461,20 +466,38 @@ export function resolveAsset(
   warnMissing?: boolean
 ): any {
   /* istanbul ignore if */
+
+  // 过滤器 id必须是字符串，不然直接退出
   if (typeof id !== "string") {
     return;
   }
+
+  //
   const assets = options[type];
+
   // check local registration variations first
+  // 首先检查本地注册变化
   if (hasOwn(assets, id)) return assets[id];
+
+  // 转驼峰形式
   const camelizedId = camelize(id);
   if (hasOwn(assets, camelizedId)) return assets[camelizedId];
+
+  // 首字母大写
   const PascalCaseId = capitalize(camelizedId);
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId];
+
   // fallback to prototype chain
+  // 回退到原型链；
+  // 按照上述逻辑继续在找一遍，当然这里查找包含原型链上的；
+  // 上面的代码之所以没有查找原型链上的数据，是因为 hasOwn存在；
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
+
+  // 不存在则报错...
   if (process.env.NODE_ENV !== "production" && warnMissing && !res) {
     warn("Failed to resolve " + type.slice(0, -1) + ": " + id, options);
   }
+
+  // 返回找到的静态资源
   return res;
 }
