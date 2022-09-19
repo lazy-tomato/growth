@@ -1,6 +1,8 @@
 /*
  * not type checking this file because flow doesn't play well with
  * dynamically accessing methods on Array prototype
+ * 没有类型检查该文件，因为 flow 不能很好地发挥作用
+ * 动态访问数组原型的方法
  */
 
 import { def } from "../util/index";
@@ -25,20 +27,21 @@ const methodsToPatch = [
 /**
  * Intercept mutating methods and emit events
  */
-// 4. 拦截变化的方法并发出事件；  遍历我们需要拦截的方法
+// 4. 拦截变化的方法并发出事件；
+// 遍历我们需要拦截的方法
 methodsToPatch.forEach(function (method) {
   // cache original method
-  // 5. 缓存原始的方法，用来后续调用
+  // 5. 缓存 原本数组身上的方法，用来后续调用
   const original = arrayProto[method];
 
-  // 6. 在 以数组原型为原型的对象上;  定义push...等;  执行操作，
+  // 6. 在 arrayMethods上;  定义push，pop，shift，unshift，splice，sort，reverse方法;
   def(arrayMethods, method, function mutator(...args) {
-    // 7. 调用数组本身的方法
+    // 7. 先触发 数组原本对应方法
     const result = original.apply(this, args);
 
-    // 8. 定义一个比那里 存储 this.__ob__
+    // 8. 获取到 数据实例上的 Observer实例。
     const ob = this.__ob__;
-    let inserted; // inserted : 插入
+    let inserted; // inserted : 插入项
 
     // 9. 选择方法
     switch (method) {
@@ -53,23 +56,20 @@ methodsToPatch.forEach(function (method) {
         break;
     }
 
-    // 10. 有新添加来的数据，需要监听一下响应式
+    // 10. 有新添加来的数据，需要处理成响应式的
     if (inserted) ob.observeArray(inserted);
+
     // notify change
-    // 通知更改
+    // 11. 通知更改
+    // 这个地方着重注意一下，我们自身实现数组的 7 种方法，使用它们的时候，也会触发视图更新，根本原因，就是因为这里`ob.dep.notify();`
     ob.dep.notify();
 
-    // 11.  result存储的是什么？ 存储的是数组本身对应的方法
+    // 12. result存储的是什么？ 存储的是数组本身对应的方法
     return result;
   });
 
-  //
   /* 
-  
-  def 给对象赋值 所以此时的：
-  arrayMethod：
-
-  Array 
+  所以最终返回的arrayMethod如下：
     {
       pop: ƒ mutator(...args)
       push: ƒ mutator(...args)
@@ -79,6 +79,5 @@ methodsToPatch.forEach(function (method) {
       splice: ƒ mutator(...args)
       unshift: ƒ mutator(...args)
     }
-  
   */
 });

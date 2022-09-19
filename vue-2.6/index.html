@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <title>lazy_tomato</title>
+</head>
+
+<body>
+  <div id="app">
+  </div>
+
+  <script type="module">
+    import Vue from './dist/vue.esm.browser.js'
+    new Vue({
+      el: '#app',
+      template: `
+      <div>
+        <input type="text" v-model="a">
+        <div>a的值： {{a}}</div>
+        <button @click="say">点击我改变 a的值</button>
+      </div>
+      `,
+      data () {
+        return {
+          a: 1,
+        }
+      },
+      methods: {
+        say () {
+          this.a = "我爱番茄"
+        }
+      }
+
+    })
+    debugger
+    new Vue({ el: '#app', data () { return { a: { name: "你好" }, } }, })
+  </script>
+
+</body>
+
+</html>

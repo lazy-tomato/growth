@@ -1,25 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
 
 <body>
 
   <div id="app">
-
     <input type="text" v-model="a">
   </div>
 
-  <!-- 番茄 -->
-
+  <!-- 我引入的是 ES Module + dev版本的Vue，所以需要说明 type="module" -->
   <script type="module">
     import Vue from './vue.esm.browser.js'
-
     new Vue({
       el: '#app',
       data () {
@@ -31,10 +26,6 @@
           d: [1, 2]
         }
       },
-
-      created () {
-        console.log(this)
-      }
     })
   </script>
 

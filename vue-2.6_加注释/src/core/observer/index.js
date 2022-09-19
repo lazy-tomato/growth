@@ -157,17 +157,22 @@ function copyAugment(target: Object, src: Object, keys: Array<string>) {
 }
 
 /**
+ * Attempt to create an observer instance for a value,
+ * returns the new observer if successfully observed,
+ * or the existing observer if the value already has one.
+ */
+/**
  * 1.
  * 尝试为一个值创建一个观察者实例
  * 如果成功观察，返回新的观察者
- * 或现有的观察者，如果值已经有一个。
+ * 如果值已经有一个,返回现有的观察者，。
  */
 
 // 2. 调用的时候 observe(data, true /* asRootData */);
 export function observe(value: any, asRootData: ?boolean): Observer | void {
-  // 3. value 需要处理的数据，作为根数据
+  // 3. value 需要处理的数据，asRootData 作为根数据
 
-  // 4. 如果不是对象，如果是虚拟DOM。直接 return。 （这里需要注意，虚拟dom没有做响应式节约性能）
+  // 4. 如果value 不是对象，或者是虚拟DOM。直接 return。 （这里 虚拟dom没有做响应式，目的是为了节约性能）
   if (!isObject(value) || value instanceof VNode) {
     return;
   }
@@ -180,7 +185,7 @@ export function observe(value: any, asRootData: ?boolean): Observer | void {
   if (hasOwn(value, "__ob__") && value.__ob__ instanceof Observer) {
     ob = value.__ob__;
   } else if (
-    // 7. 需要监听；不是服务端渲染；是数组 或者 普通对象 ；可扩展；_isVue为false
+    // 7. 需要监听；不是服务端渲染；是数组 或者 普通对象 ；可扩展；不是 Vue实例对象
     shouldObserve &&
     !isServerRendering() &&
     (Array.isArray(value) || isPlainObject(value)) &&

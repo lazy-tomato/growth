@@ -24,6 +24,7 @@ export function initMixin(Vue: Class<Component>) {
     // 2. 实例的一个唯一标识
     vm._uid = uid++;
 
+    // 性能检测
     let startTag, endTag;
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== "production" && config.performance && mark) {
@@ -33,7 +34,7 @@ export function initMixin(Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
-    // 避免被观察到的标志
+    // 避免被观察到的标志 (Vue实例，不被转换为响应式)
     vm._isVue = true;
 
     // merge options
@@ -72,7 +73,7 @@ export function initMixin(Vue: Class<Component>) {
     // initInjections 主要做了：初始化inject, 本质上是，匹配 子组件到上层组件的的_provided 和 inject是否有同名属性。
     initInjections(vm); // resolve injections before data/props
 
-    // initState 主要做了： 依次触发： props methods data computed watch
+    // initState 主要做了： 依次初始化： props methods data computed watch
     initState(vm);
 
     // initProvide 主要做了：初始化 provide

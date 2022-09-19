@@ -144,11 +144,12 @@ function initProps(vm: Component, propsOptions: Object) {
   toggleObserving(true);
 }
 
+// 初始化data
 function initData(vm: Component) {
   // 拿到data
   let data = vm.$options.data;
 
-  // 判断是不是函数 是函数就 getData  ，不是函数拿来直接使用，注意一下 他这里把传入的 data也在 vm._data中保存了一份
+  // 判断传入的data是不是函数 是函数就 getData 处理一下，不是函数拿来直接使用，注意一下 他这里把传入的 data也在 vm._data中保存了一份
   data = vm._data = typeof data === "function" ? getData(data, vm) : data || {};
 
   // 不是对象进行警告。
