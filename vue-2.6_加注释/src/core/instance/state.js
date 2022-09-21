@@ -1,4 +1,5 @@
 /* @flow */
+/* 和数据有关的方法 */
 
 import config from "../config";
 import Watcher from "../observer/watcher";
@@ -470,12 +471,15 @@ export function stateMixin(Vue: Class<Component>) {
   Vue.prototype.$set = set;
   Vue.prototype.$delete = del;
 
+  // $watch 第一个参数接受：1.字符串；2.函数；
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
     cb: any,
     options?: Object
   ): Function {
     const vm: Component = this;
+
+    // 如果是普通的对象 (这里是针对 watch中直接第二个参数传入一个对象的情况.)
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options);
     }
@@ -483,15 +487,15 @@ export function stateMixin(Vue: Class<Component>) {
     options = options || {};
     options.user = true;
 
-    // 创建一个 watcher0
+    // 创建一个 watcher
     const watcher = new Watcher(vm, expOrFn, cb, options);
 
-    // 如果首次加载
+    // 如果首次加载，立即执行
     if (options.immediate) {
       const info = `callback for immediate watcher "${watcher.expression}"`;
-      pushTarget();
-      invokeWithErrorHandling(cb, vm, [watcher.value], vm, info);
-      popTarget();
+      pushTarget(); // 将当前的 watcher 放到，Dep.target上；
+      invokeWithErrorHandling(cb, vm, [watcher.value], vm, info); // 在 trycatch中执行 cb。
+      popTarget(); // 处理 Dep.target
     }
 
     // 返回一个解除 watch的函数，

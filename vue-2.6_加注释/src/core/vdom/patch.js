@@ -679,7 +679,7 @@ export function createPatchFunction(backend) {
       }
     }
 
-    // 旧的先diff完， 剩下的新项，添加到真实 dom 中
+    // 旧的先diff完， 剩下的就是：新项，添加到真实 dom 中
     if (oldStartIdx > oldEndIdx) {
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm;
       addVnodes(

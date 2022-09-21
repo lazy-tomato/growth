@@ -20,17 +20,19 @@ import { normalizeChildren, simpleNormalizeChildren } from "./helpers/index";
 const SIMPLE_NORMALIZE = 1;
 const ALWAYS_NORMALIZE = 2;
 
+// 4. 创建元素节点
+
 // wrapper function for providing a more flexible interface
-// 包装    函数      来  提供      更多    灵活的    接口
 // without getting yelled at by flow
-// 不会被 flow 喊叫？？
+// 包装函数来提供更多灵活的接口
+// 不会被 flow 处理
 
 // 包裹了 _createElement函数，真正创建元素的方法是 _createElement，开头带下划线，这种写法也很多，类似于后续会遇到的 _render 需要注意。
 export function createElement(
-  context: Component,
-  tag: any,
-  data: any,
-  children: any,
+  context: Component, // 当前 组件的 Vue.js 实例。
+  tag: any, // 元素的标签
+  data: any, // 元素的属性
+  children: any, // 当前节点的子节点列表
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {

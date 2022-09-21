@@ -75,7 +75,7 @@ export default class VNode {
   }
 }
 
-// 创建一个注释节点
+// 1. 创建一个注释节点
 export const createEmptyVNode = (text: string = "") => {
   const node = new VNode();
   // 注释中的内容
@@ -97,7 +97,7 @@ export const createEmptyVNode = (text: string = "") => {
   */
 };
 
-// 创建一个文本节点
+// 2. 创建一个文本节点
 export function createTextVNode(val: string | number) {
   // 对标上述的 VNode的constructor，第四个参数就是 text
   return new VNode(undefined, undefined, undefined, String(val));
@@ -108,12 +108,12 @@ export function createTextVNode(val: string | number) {
 // used for static nodes and slot nodes because they may be reused across
 // multiple renders, cloning them avoids errors when DOM manipulations rely
 // on their elm reference.
-//优化的浅克隆
-//用于静态节点和 插槽节点，因为它们可以跨节点重用
-//多个渲染，克隆它们可以避免DOM操作依赖时的错误
-//他们的elm引用。
+// 优化的浅克隆
+// 用于静态节点和 插槽节点，因为它们可以跨节点重用
+// 多个渲染，克隆它们可以避免DOM操作依赖时的错误
+// 他们的elm引用。
 
-// 克隆节点
+// 3. 克隆节点  （优化静态节点和插槽节点）
 /* 
   以静态节点为例：组件的的某一个状态发生变化，静态节点因为他的内容不会改变，所以除了第一次执行渲染函数，后续不需要通过渲染函数来生产 vnode，直接拷贝一份vnode即可，提升性能。
   *我个人理解：渲染函数生成 vnode ,有些静态节点不用执行渲染函数的一些逻辑，直接拷贝之前的静态节点即可。*

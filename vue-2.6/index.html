@@ -15,7 +15,7 @@
     new Vue({
       el: '#app',
       template: `
-      <div>
+      <div id='app'>
         <input type="text" v-model="a">
         <div>a的值： {{a}}</div>
         <button @click="say">点击我改变 a的值</button>
@@ -33,7 +33,6 @@
       }
 
     })
-    debugger
     new Vue({ el: '#app', data () { return { a: { name: "你好" }, } }, })
   </script>
 

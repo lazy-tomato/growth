@@ -86,6 +86,8 @@ export default class Watcher {
       process.env.NODE_ENV !== "production" ? expOrFn.toString() : "";
     // parse expression for getter
     if (typeof expOrFn === "function") {
+      // 如果传入的是函数，函数中使用到的数据都会被观察，只要有一个数据改变，watcher就会收到通知。
+      // computed就是这么一个原理。 其次仔细想想 正常的渲染watcher，getter是去触发 render，render获取数据。这种传入函数的watcher，getter会去获取函数中使用的数据。
       this.getter = expOrFn;
     } else {
       this.getter = parsePath(expOrFn);
@@ -136,6 +138,8 @@ export default class Watcher {
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      // “触摸”每个属性，因此它们都被跟踪为
+      // 依赖深度观察
       if (this.deep) {
         traverse(value);
       }
@@ -149,6 +153,7 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
+   * 添加新的依赖到当前的指令
    */
   addDep(dep: Dep) {
     // 10 获取到 dep实例的id
@@ -172,6 +177,8 @@ export default class Watcher {
    * Clean up for dependency collection.
    * 清理依赖项收集。
    */
+
+  // 感觉是清除旧的依赖
   cleanupDeps() {
     let i = this.deps.length; // 存储 deps
     while (i--) {
@@ -219,21 +226,30 @@ export default class Watcher {
   /**
    * Scheduler job interface.
    * Will be called by the scheduler.
+   * 调度器的工作界面。
+   * 将被调度程序调用。
    */
   run() {
     if (this.active) {
+      // 触发视图更新
       const value = this.get();
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
         // when the value is the same, because the value may
         // have mutated.
+        // 深度观测者和对象/数组上的观测者应该同时发射
+        // 当值相同时，因为值可能
+        // 有突变。
         isObject(value) ||
         this.deep
       ) {
+        // 设置新值。
         // set new value
         const oldValue = this.value;
         this.value = value;
+
+        // 执行回调函数
         if (this.user) {
           const info = `callback for watcher "${this.expression}"`;
           invokeWithErrorHandling(
@@ -271,7 +287,6 @@ export default class Watcher {
   depend() {
     // this.deps属性保存了所有状态的dep实例，每个dep实例保存了它的所有依赖
     // 简单来说，就是遍历了 this.deps, 将当前的 watcher放到所有的依赖项中。
-
     let i = this.deps.length;
     while (i--) {
       this.deps[i].depend();
@@ -287,9 +302,15 @@ export default class Watcher {
       // remove self from vm's watcher list
       // this is a somewhat expensive operation so we skip it
       // if the vm is being destroyed.
+      // 从vm的监视列表中删除self
+      // 这是一个有点昂贵的操作，所以我们跳过它
+      // 如果虚拟机正在被销毁。
       if (!this.vm._isBeingDestroyed) {
         remove(this.vm._watchers, this);
       }
+
+      // this.deps => watcher本身记录着它自己订阅了谁
+      // 当需要
       let i = this.deps.length;
       while (i--) {
         this.deps[i].removeSub(this);

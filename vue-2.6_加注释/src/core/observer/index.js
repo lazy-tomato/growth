@@ -250,7 +250,7 @@ export function defineReactive(
       if (Dep.target) {
         dep.depend();
 
-        // 8.3 子对象
+        // 8.3 子对象的 Observer实例,存在，子对象也收集依赖
         if (childOb) {
           childOb.dep.depend();
 
@@ -311,6 +311,7 @@ export function defineReactive(
  * 如果属性没有更改，则触发更改通知
  * 已经存在。
  */
+// 两个限制， 不能是 vue实例;不能是实例的根数据对象;
 export function set(target: Array<any> | Object, key: any, val: any): any {
   if (
     process.env.NODE_ENV !== "production" &&
@@ -318,19 +319,21 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
-      `Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`
+      `Cannot set reactive property on undefined, null, or primitive value: ${target}`
     );
   }
 
   // 如果是数组
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     // Math.max() 函数返回一组数中的最大值。
-    target.length = Math.max(target.length, key);
+    target.length = Math.max(target.length, key); // 这里是为了保证 突然增大数组的长度，响应式的逻辑未处理
+
+    // 添加我们传入的值到数据中
     target.splice(key, 1, val);
     return val;
   }
 
-  // 如果 key 值已经存在对象中，且不是原型的属性；
+  // 如果 key 值已经存在对象中，且不是原型的属性；（已经是响应式的了无需处理）
   if (key in target && !(key in Object.prototype)) {
     target[key] = val;
     return val;
@@ -339,7 +342,7 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
   // 获取到 Observer 实例上的 ob
   const ob = (target: any).__ob__;
 
-  // 如果是vue实例，或者是Vue实例的根数据对象 （可以理解 this.$data 就是根数据）
+  // 如果是vue实例，或者是Vue实例的根数据对象 （可以理解 this.$data 就是根数据，不允许使用 $set）
   if (target._isVue || (ob && ob.vmCount)) {
     // 如果是 undefined 或 null; 或者是原始值
     process.env.NODE_ENV !== "production" &&
@@ -367,6 +370,7 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
 
 /**
  * Delete a property and trigger change if necessary.
+ * 如果需要，删除属性并触发更改。
  */
 export function del(target: Array<any> | Object, key: any) {
   if (
@@ -375,11 +379,11 @@ export function del(target: Array<any> | Object, key: any) {
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(
-      `Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`
+      `Cannot delete reactive property on undefined, null, or primitive value: ${target}`
     );
   }
 
-  // 数组，直接改
+  // 数组，利用splice，直接改
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1);
     return;
@@ -409,18 +413,26 @@ export function del(target: Array<any> | Object, key: any) {
     return;
   }
 
-  // 手动触发 ！！ 有作者在想，直接在代码中 `.__ob__`  手动通知不就ok了？ 不建议这样做、
+  // 手动触发 ！！ 有作者在想，直接在代码中 `.__ob__`  手动通知不就ok了？ 虽然可以但是不建议这样做、
   ob.dep.notify();
 }
 
 /**
  * Collect dependencies on array elements when the array is touched, since
  * we cannot intercept array element access like property getters.
+ * 当数组被 “接触” 时，收集数组元素的依赖关系
+ * 我们不能像属性getter那样拦截数组元素访问
  */
 function dependArray(value: Array<any>) {
+  // 遍历数组
   for (let e, i = 0, l = value.length; i < l; i++) {
+    // e是数组的每一项
     e = value[i];
+
+    // e存在；e.__ob__存在；e.__ob__.dep开始收集依赖， 这里的依赖是存储在 observe实例上。！！注意只有数组会想起在
     e && e.__ob__ && e.__ob__.dep.depend();
+
+    // 如果项还是数组。递归收集依赖。
     if (Array.isArray(e)) {
       dependArray(e);
     }

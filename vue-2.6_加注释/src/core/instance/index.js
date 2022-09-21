@@ -18,6 +18,7 @@ function Vue(options) {
 
 // 4. 调用函数
 initMixin(Vue);
+
 stateMixin(Vue);
 eventsMixin(Vue);
 lifecycleMixin(Vue);

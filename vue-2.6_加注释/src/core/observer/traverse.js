@@ -4,7 +4,7 @@ import { _Set as Set, isObject } from "../util/index";
 import type { SimpleSet } from "../util/index";
 import VNode from "../vdom/vnode";
 
-const seenObjects = new Set();
+const seenObjects = new Set(); // 去重
 
 /**
  * Recursively traverse an object to evoke all converted
@@ -26,7 +26,7 @@ export function traverse(val: any) {
 function _traverse(val: any, seen: SimpleSet) {
   let i, keys;
   const isA = Array.isArray(val);
-  // 不是数组 不是对象 ； 冻结的对象； 是虚拟dom;
+  // 不是数组 不是对象 ； 冻结的对象； 是虚拟dom; 直接退出
   if (
     (!isA && !isObject(val)) ||
     Object.isFrozen(val) ||

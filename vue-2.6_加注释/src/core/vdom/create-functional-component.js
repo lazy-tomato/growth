@@ -96,7 +96,7 @@ export function FunctionalRenderContext(
 
 installRenderHelpers(FunctionalRenderContext.prototype);
 
-// 创建一个函数组件
+// 6. 创建一个函数组件
 export function createFunctionalComponent(
   Ctor: Class<Component>,
   propsData: ?Object,

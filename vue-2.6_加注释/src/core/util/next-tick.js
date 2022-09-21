@@ -38,7 +38,7 @@ function flushCallbacks() {
 // where microtasks have too high a priority and fire in between supposedly
 // sequential events (e.g. #4521, #6690, which have workarounds)
 // or even between bubbling of the same event (#6566).
-let timerFunc;
+let timerFunc; // 定义一个变量
 
 // The nextTick behavior leverages the microtask queue, which can be accessed
 // via either native Promise.then or MutationObserver.
@@ -107,6 +107,8 @@ if (typeof Promise !== "undefined" && isNative(Promise)) {
 // 其实就是 下次微任务执行时 更新 dom
 export function nextTick(cb?: Function, ctx?: Object) {
   let _resolve;
+
+  // 1. 存储所有的 cb
   callbacks.push(() => {
     if (cb) {
       try {
@@ -118,11 +120,14 @@ export function nextTick(cb?: Function, ctx?: Object) {
       _resolve(ctx);
     }
   });
+
+  // 2. 在下一次微任务执行时 timerFunc， 去调用callbacks存储的所有方法
   if (!pending) {
     pending = true;
     timerFunc();
   }
   // $flow-disable-line
+  // 没有回调函数，返回一个 promise对象？
   if (!cb && typeof Promise !== "undefined") {
     return new Promise((resolve) => {
       _resolve = resolve;
