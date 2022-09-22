@@ -28,10 +28,15 @@ const weexFactoryPlugin = {
 };
 
 const aliases = require("./alias");
+
+// resolve函数
 const resolve = (p) => {
-  const base = p.split("/")[0];
+  // "web/entry-runtime.js"
+  const base = p.split("/")[0]; // 第一个参数 例如  web server
+
+  // web并不是我们需要找到的文件路径，需要借助 aliases
   if (aliases[base]) {
-    return path.resolve(aliases[base], p.slice(base.length + 1));
+    return path.resolve(aliases[base], p.slice(base.length + 1)); // resolve('src/platforms/web'),
   } else {
     return path.resolve(__dirname, "../", p);
   }
@@ -40,10 +45,10 @@ const resolve = (p) => {
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   "web-runtime-cjs-dev": {
-    entry: resolve("web/entry-runtime.js"),
-    dest: resolve("dist/vue.runtime.common.dev.js"),
-    format: "cjs",
-    env: "development",
+    entry: resolve("web/entry-runtime.js"), // 构建的js入口地址
+    dest: resolve("dist/vue.runtime.common.dev.js"), // 构建后的js文件地址
+    format: "cjs", // 遵循什么模块化规范
+    env: "development", // 环境
     banner,
   },
   "web-runtime-cjs-prod": {

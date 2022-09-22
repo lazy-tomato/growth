@@ -103,6 +103,8 @@ export function toNumber(val: string): number | string {
 /**
  * Make a map and return a function for checking if a key
  * is in that map.
+ * 制作一个映射并返回一个函数来检查一个键是否存在
+ * 在那张地图上。
  */
 export function makeMap(
   str: string,
@@ -118,6 +120,7 @@ export function makeMap(
 
 /**
  * Check if a tag is a built-in tag.
+ * 检查一个标记是否是内置标记。
  */
 export const isBuiltInTag = makeMap("slot,component", true);
 

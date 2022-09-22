@@ -54,6 +54,7 @@ function decodeAttr(value, shouldDecodeNewlines) {
   return value.replace(re, (match) => decodingMap[match]);
 }
 
+// 解析 html
 export function parseHTML(html, options) {
   const stack = [];
   const expectHTML = options.expectHTML;
