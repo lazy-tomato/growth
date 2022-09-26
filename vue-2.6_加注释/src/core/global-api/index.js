@@ -51,7 +51,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   Vue.nextTick = nextTick;
 
   // 2.6 explicit observable API
-  Vue.observable = <T>(obj: T): T => {
+  Vue.observable = (obj) => {
     observe(obj);
     return obj;
   };
@@ -63,6 +63,9 @@ export function initGlobalAPI(Vue: GlobalAPI) {
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
+  // 该函数用于标识扩展所有plain-object的"base"构造函数
+  // Weex的多实例场景中的组件。
+  //  @tomato, 这就对应 创建组件中的 vm.$options._base 取值的出处了。 （当然，options是vue原本的配置，而$options存储的是，用户配置合并之后的配置）
   Vue.options._base = Vue;
 
   extend(Vue.options.components, builtInComponents);

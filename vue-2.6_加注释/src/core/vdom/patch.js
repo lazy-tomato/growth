@@ -124,10 +124,15 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
   return map;
 }
 
+// 创建补丁的函数
 export function createPatchFunction(backend) {
   let i, j;
   const cbs = {};
 
+  // 为什么大费周章的 讲 patch存放在各个目录，因为平台不同导致的。
+  // 不同的平台，patch 主干逻辑是相同的， 主干逻辑就放在了 core 中
+  // nodeOps 表示平台的 dom操作的方法
+  // modules 表示平台的一些模块
   const { modules, nodeOps } = backend;
 
   for (i = 0; i < hooks.length; ++i) {
@@ -186,7 +191,7 @@ export function createPatchFunction(backend) {
 
   let creatingElmInVPre = 0;
 
-  // 创建正式dom
+  // 依据虚拟dom，创建正式dom
   function createElm(
     vnode,
     insertedVnodeQueue,
@@ -214,6 +219,7 @@ export function createPatchFunction(backend) {
     const children = vnode.children;
     const tag = vnode.tag;
 
+    // 1. 存在标签
     if (isDef(tag)) {
       if (process.env.NODE_ENV !== "production") {
         if (data && data.pre) {
@@ -267,7 +273,7 @@ export function createPatchFunction(backend) {
           invokeCreateHooks(vnode, insertedVnodeQueue);
         }
 
-        // 插入dom parentNode.xxx
+        // 插入父级dom parentNode.xxx
         insert(parentElm, vnode.elm, refElm);
       }
 
@@ -275,9 +281,11 @@ export function createPatchFunction(backend) {
         creatingElmInVPre--;
       }
     } else if (isTrue(vnode.isComment)) {
+      // 2. 是注释节点
       vnode.elm = nodeOps.createComment(vnode.text);
       insert(parentElm, vnode.elm, refElm);
     } else {
+      // 3. 其他 文本节点
       vnode.elm = nodeOps.createTextNode(vnode.text);
       insert(parentElm, vnode.elm, refElm);
     }
@@ -402,7 +410,9 @@ export function createPatchFunction(backend) {
     }
     i = vnode.data.hook; // Reuse variable
     if (isDef(i)) {
+      // 执行所有的 create
       if (isDef(i.create)) i.create(emptyNode, vnode);
+      // 将 vnode 存储到 insertedVnodeQueue
       if (isDef(i.insert)) insertedVnodeQueue.push(vnode);
     }
   }
@@ -955,7 +965,8 @@ export function createPatchFunction(backend) {
     }
   }
 
-  // 主干逻辑 patch
+  // 主干逻辑 patch ，滑动到底部，createPatchFunction 函数归根到底返回的是 patch这个函数
+  // 四个参数， 旧节点；_render返回的新节点；是否是服务端渲染；removeOnly 是给 transition-group 用的，之后会介绍。
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
     // 1. 新节点 undeifned
     if (isUndef(vnode)) {

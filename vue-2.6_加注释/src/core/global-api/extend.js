@@ -21,6 +21,8 @@ export function initExtend(Vue: GlobalAPI) {
 
   // 传入的是模板配置，返回值是一个函数;  Vue.extend主要作用还是 创建一个子类，然后让这个子类继承 Vue 身上的一些功能；
   // 整体来说 创建一个 Sub函数，继承父级，如果是直接 Vue.extend,则Sub继承于 Vue构造函数。
+
+  // 简单来说，就是传入一个对象，返回一个 Vue的子类。
   Vue.extend = function (extendOptions: Object): Function {
     // 1. 传入的是一个对象
     extendOptions = extendOptions || {};

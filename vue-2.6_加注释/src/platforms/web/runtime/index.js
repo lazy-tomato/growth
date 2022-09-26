@@ -31,6 +31,7 @@ extend(Vue.options.directives, platformDirectives);
 extend(Vue.options.components, platformComponents);
 
 // install platform patch function
+// 安装平台 补丁 函数， (在 weex中是没有dom的所以直接传一个 noop)
 Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
 // public mount method

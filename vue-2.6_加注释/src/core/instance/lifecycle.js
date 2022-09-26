@@ -63,6 +63,7 @@ export function initLifecycle(vm: Component) {
 }
 
 export function lifecycleMixin(Vue: Class<Component>) {
+  // 更新
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this;
     const prevEl = vm.$el;
@@ -71,6 +72,8 @@ export function lifecycleMixin(Vue: Class<Component>) {
     vm._vnode = vnode;
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
+
+    // 归根到底,会执行 vm.__patch__ 这个方法， 这个方法不同的平台，定义是不相同的。 在 web 平台中它的定义在 src/platforms/web/runtime/index.js 中：
     if (!prevVnode) {
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */);

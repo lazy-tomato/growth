@@ -55,7 +55,7 @@ export function _createElement(
   children?: any, // 当前节点的子节点列表； [vnode , vnode]
   normalizationType?: number // ??
 ): VNode | Array<VNode> {
-  if (isDef(data) && isDef((data: any).__ob__)) {
+  if (isDef(data) && isDef(data.__ob__)) {
     process.env.NODE_ENV !== "production" &&
       warn(
         `Avoid using observed data object as vnode data: ${JSON.stringify(
@@ -102,9 +102,13 @@ export function _createElement(
     children = simpleNormalizeChildren(children);
   }
   let vnode, ns;
+
+  // 如果传入的是字符串
   if (typeof tag === "string") {
     let Ctor;
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag);
+
+    //  如果是普通的 html标签
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (
@@ -131,6 +135,7 @@ export function _createElement(
       isDef((Ctor = resolveAsset(context.$options, "components", tag)))
     ) {
       // component
+      // 如果是组件的话
       vnode = createComponent(Ctor, data, context, children, tag);
     } else {
       // unknown or unlisted namespaced elements

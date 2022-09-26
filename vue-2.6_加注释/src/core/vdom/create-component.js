@@ -92,7 +92,8 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks);
 
-// 5. 创建一个组件节点
+// 5. 创建一个组件节点  (依据一个组件创建一个虚拟dom)
+// 本身这个函数是非常复杂的，暂时先学习核心逻辑
 export function createComponent(
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -104,9 +105,13 @@ export function createComponent(
     return;
   }
 
+  // baseCtor 实际上就是 Vue； src/core/global-api/index.js 中的 initGlobalAPI 函数有这么一段逻辑： Vue.options._base = Vue
   const baseCtor = context.$options._base;
 
   // plain options object: turn it into a constructor
+  // 普通选项对象:将其转换为构造函数
+
+  // 我们创建一个组件的时候，通常创建的是一个普通对象，所以会走这里，将其转换为构造函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor);
   }
