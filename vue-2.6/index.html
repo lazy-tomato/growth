@@ -16,24 +16,29 @@
       el: '#app',
       template: `
       <div id='app'>
-        <input type="text" v-model="a">
-        <div>a的值： {{a}}</div>
+        <input type="text" v-model="a.b">
+        <div>a的值： {{a.b}}</div>
         <button @click="say">点击我改变 a的值</button>
       </div>
       `,
       data () {
         return {
-          a: 1,
+          a: {
+            b: 1
+          },
         }
+      },
+      watch: {
+        'a': function (val, oldVal) {
+          console.log('new: %s, old: %s', val, oldVal)
+        },
       },
       methods: {
         say () {
-          this.a = "我爱番茄"
+          this.a.b = "我爱番茄"
         }
       }
-
     })
-    new Vue({ el: '#app', data () { return { a: { name: "你好" }, } }, })
   </script>
 
 </body>

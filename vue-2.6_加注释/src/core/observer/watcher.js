@@ -31,30 +31,30 @@ let uid = 0;
 // 1. 整体看下来，Watcher 其实就是一个类
 export default class Watcher {
   // 2. 实例上有一堆属性 ， vm 是我们的Vue实例
-  vm: Component;
-  expression: string;
-  cb: Function;
-  id: number;
-  deep: boolean;
-  user: boolean;
-  lazy: boolean;
-  sync: boolean;
-  dirty: boolean;
+  vm: Component; // 实例
+  expression: string; // 表达式
+  cb: Function; // 回调函数
+  id: number; // 唯一id
+  deep: boolean; // 是否深度监听
+  user: boolean; // 是否用户自定义的watcher
+  lazy: boolean; // 是否是 lazy Watcher
+  sync: boolean; // 是否同步
+  dirty: boolean; //
   active: boolean;
-  deps: Array<Dep>;
-  newDeps: Array<Dep>;
-  depIds: SimpleSet;
-  newDepIds: SimpleSet;
+  deps: Array<Dep>; // 存储 旧dep 的数组
+  newDeps: Array<Dep>; // 存储 新dep 的数组
+  depIds: SimpleSet; // 存储 旧dep的id （Set类型，支持去重）
+  newDepIds: SimpleSet; // 存储 新dep 的id （Set类型，支持去重）
   before: ?Function;
   getter: Function;
   value: any;
 
   constructor(
-    vm: Component,
-    expOrFn: string | Function,
-    cb: Function,
-    options?: ?Object,
-    isRenderWatcher?: boolean
+    vm: Component, // 实例
+    expOrFn: string | Function, // 表达式
+    cb: Function, // 回调函数
+    options?: ?Object, // 配置
+    isRenderWatcher?: boolean // 是否是渲染函数
   ) {
     // 3. Watcher实例上存储一下我们的 vm
     this.vm = vm;
@@ -62,7 +62,7 @@ export default class Watcher {
       vm._watcher = this;
     }
 
-    // 4. 一个vm （一个组件处理渲染的 watcher，还有我们自定义的watcher或者计算属性，这里都存储在 `vm._watchers` 上）
+    // 4. 一个组件的watch，除了渲染watcher，还有其他的watcher，定义一个变量`_watchers`, 存储所有的watcher。
     vm._watchers.push(this);
     // options
     if (options) {
@@ -72,10 +72,11 @@ export default class Watcher {
       this.sync = !!options.sync;
       this.before = options.before;
     } else {
+      // 全部为false
       this.deep = this.user = this.lazy = this.sync = false;
     }
     this.cb = cb;
-    this.id = ++uid; // uid for batching
+    this.id = ++uid; // uid for batching 存储唯一的id
     this.active = true;
     this.dirty = this.lazy; // for lazy watchers
     this.deps = []; //存放dep的容器
@@ -86,10 +87,12 @@ export default class Watcher {
       process.env.NODE_ENV !== "production" ? expOrFn.toString() : "";
     // parse expression for getter
     if (typeof expOrFn === "function") {
+      // expOrFn是我们传入的第二个参数，可以为字符串或函数。
       // 如果传入的是函数，函数中使用到的数据都会被观察，只要有一个数据改变，watcher就会收到通知。
       // computed就是这么一个原理。 其次仔细想想 正常的渲染watcher，getter是去触发 render，render获取数据。这种传入函数的watcher，getter会去获取函数中使用的数据。
       this.getter = expOrFn;
     } else {
+      // parsePath解析我们的表达式
       this.getter = parsePath(expOrFn);
       if (!this.getter) {
         this.getter = noop;
@@ -103,9 +106,9 @@ export default class Watcher {
       }
     }
 
-    // 5. 整体看下来，都是在 watcher 实例上，初始化一些属性；
+    // 5. 整体看下来上方的逻辑，都是在 watcher 实例上，初始化一些属性；
 
-    // 6. 注意这里： this.lazy(是否是计算属性) ，渲染的 watcher的 this.lazy 为 false,会执行 `this.get()`
+    // 6. 注意这里： this.lazy ，渲染的 watcher的 this.lazy 为 false,会执行 `this.get()`
     this.value = this.lazy ? undefined : this.get();
   }
 
@@ -114,7 +117,7 @@ export default class Watcher {
    * 求值getter，并重新收集依赖项。
    */
   get() {
-    // 7.
+    // 7. pushTarget会做这么两个操作。
     // 7.1 向一个数组中添加当前的 watcher实例;
     // 7.2 `Dep.target = this` => `Dep.target = 当前的 watcher`
     pushTarget(this);
@@ -126,7 +129,7 @@ export default class Watcher {
       /* 
       1.执行 this.getter
       2.渲染的时候，实际执行的是： () => {vm._update(vm._render(), hydrating);};
-      3. vm._render()会获取 data 的值，触发了数据的 get,从而实现依赖收集
+      3. vm._render()会获取 data 的值，触发了数据的 get ,从而实现依赖收集
       */
       value = this.getter.call(vm, vm);
     } catch (e) {

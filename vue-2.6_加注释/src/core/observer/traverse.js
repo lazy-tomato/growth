@@ -35,7 +35,7 @@ function _traverse(val: any, seen: SimpleSet) {
     return;
   }
 
-  // 存在响应式，拿到依赖的唯一标识 id
+  // 存在响应式，存储依赖的唯一标识 id
   if (val.__ob__) {
     const depId = val.__ob__.dep.id;
     if (seen.has(depId)) {
