@@ -182,7 +182,7 @@ export function queueWatcher(watcher: Watcher) {
   // 1. 拿到 watcher的id
   const id = watcher.id;
 
-  // 2. has 是一个对象， 用来存储 watcher
+  // 2. has 是一个对象， 用来存储 watcher 同一个 watcher不用重复推入
   if (has[id] == null) {
     has[id] = true;
 

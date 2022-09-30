@@ -18,6 +18,8 @@
       <div id='app'>
         <input type="text" v-model="a.b">
         <div>a的值： {{a.b}}</div>
+        {{c+d}}
+
         <button @click="say">点击我改变 a的值</button>
       </div>
       `,
@@ -26,6 +28,8 @@
           a: {
             b: 1
           },
+          c: 1,
+          d: 1
         }
       },
       watch: {
@@ -36,6 +40,8 @@
       methods: {
         say () {
           this.a.b = "我爱番茄"
+          this.c = "222"
+          this.d = "333"
         }
       }
     })

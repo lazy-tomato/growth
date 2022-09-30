@@ -218,7 +218,7 @@ export default class Watcher {
       // 懒
       this.dirty = true;
     } else if (this.sync) {
-      // 异步
+      // 同步
       this.run();
     } else {
       // 主要是执行 queueWatcher
