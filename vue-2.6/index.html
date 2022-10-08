@@ -12,6 +12,16 @@
 
   <script type="module">
     import Vue from './dist/vue.esm.browser.js'
+
+    Vue.component('swq', {
+      functional: true,
+      props: ['level'],
+      render (h, { props, data, children }) {
+        return h(`h${props.level}`, data, children)
+      },
+    }
+    )
+
     new Vue({
       el: '#app',
       template: `
@@ -19,7 +29,10 @@
         <input type="text" v-model="a.b">
         <div>a的值： {{a.b}}</div>
         {{c+d}}
-
+        --------
+        <swq :level="level">
+      123
+          </swq>
         <button @click="say">点击我改变 a的值</button>
       </div>
       `,
@@ -29,7 +42,8 @@
             b: 1
           },
           c: 1,
-          d: 1
+          d: 1,
+          level: "2"
         }
       },
       watch: {
@@ -43,8 +57,14 @@
           this.c = "222"
           this.d = "333"
         }
-      }
+      },
+      // components: {
+      //   swq: swq
+      // }
+
     })
+
+
   </script>
 
 </body>
