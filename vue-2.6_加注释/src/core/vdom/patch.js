@@ -114,6 +114,7 @@ function sameInputType(a, b) {
   return typeA === typeB || (isTextInputType(typeA) && isTextInputType(typeB));
 }
 
+// 从beginIdx 到 endIdx，遍历所有的子节点，如果key存在，则以对象的形式存储 节点的key：节点的索引
 function createKeyToOldIdx(children, beginIdx, endIdx) {
   let i, key;
   const map = {};
@@ -534,7 +535,7 @@ export function createPatchFunction(backend) {
     }
   }
 
-  // diff算法的核心逻辑 swq
+  // diff算法的核心逻辑
   function updateChildren(
     parentElm,
     oldCh,
@@ -556,7 +557,7 @@ export function createPatchFunction(backend) {
     // to ensure removed elements stay in correct relative positions
     // during leaving transitions
 
-    // removeOnly是一个特殊的标志，只能被&lt;
+    // removeOnly是一个特殊的标志，只能被 <transition-group>;
     // 确保被删除的元素保持在正确的相对位置
     // 在离开过渡时
 
@@ -585,6 +586,7 @@ export function createPatchFunction(backend) {
           newCh,
           newStartIdx
         );
+        // ++a 表示先增加a，再使用a； a++标识先使用a，在增加a
         oldStartVnode = oldCh[++oldStartIdx];
         newStartVnode = newCh[++newStartIdx];
 
@@ -638,12 +640,16 @@ export function createPatchFunction(backend) {
 
         // ？
         if (isUndef(oldKeyToIdx))
+          // 旧前 旧后 组成的  "节点的key"："节点的索引"
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+
+        // 新节点是否有key，有key就去oldKeyToIdx中寻找，没有key从旧前到旧后，开始遍历，依次拿 每一项旧节点和新节点对比，对比成功直接返回对应的索引
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
+
         if (isUndef(idxInOld)) {
-          // 5.1 没有索引，直接创建型的元素
+          // 5.1 没有索引，说明是全新的节点，直接创建新的元素
           // New element
           createElm(
             newStartVnode,
@@ -655,7 +661,7 @@ export function createPatchFunction(backend) {
             newStartIdx
           );
         } else {
-          // 5.2 对比
+          // 5.2 有key，且相同元素
           vnodeToMove = oldCh[idxInOld];
           if (sameVnode(vnodeToMove, newStartVnode)) {
             patchVnode(
@@ -673,7 +679,7 @@ export function createPatchFunction(backend) {
                 oldStartVnode.elm
               );
           } else {
-            // 相同的 key，不同的元素，视为新元素。
+            // 有key，不相同元素，视为新元素。
             // same key but different element. treat as new element
             createElm(
               newStartVnode,
@@ -726,7 +732,9 @@ export function createPatchFunction(backend) {
     }
   }
 
+  // 参数 : 新节点；旧节点的数组；旧前；旧后；
   function findIdxInOld(node, oldCh, start, end) {
+    // 从旧前到旧后，开始遍历，依次拿 每一项旧节点和新节点对比，对比成功直接返回对应的索引
     for (let i = start; i < end; i++) {
       const c = oldCh[i];
       if (isDef(c) && sameVnode(node, c)) return i;
@@ -767,10 +775,10 @@ export function createPatchFunction(backend) {
     // note we only do this if the vnode is cloned -
     // if the new node is not cloned it means the render functions have been
     // reset by the hot-reload-api and we need to do a proper re-render.
-    //重用静态树的元素。
-    //注意我们只在vnode被克隆时才这样做-
-    //如果新节点没有被克隆，这意味着渲染函数已经被克隆了
-    //被热重载api重置，我们需要做一个适当的重新渲染。
+    // 重用静态树的元素。
+    // 注意我们只在vnode被克隆时才这样做-
+    // 如果新节点没有被克隆，这意味着渲染函数已经被克隆了
+    // 被热重载api重置，我们需要做一个适当的重新渲染。
     if (
       isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
@@ -787,7 +795,10 @@ export function createPatchFunction(backend) {
       i(oldVnode, vnode);
     }
 
+    // 1. 存储旧的子节点
     const oldCh = oldVnode.children;
+
+    // 2. 存储新的子节点
     const ch = vnode.children;
     if (isDef(data) && isPatchable(vnode)) {
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode);
@@ -813,7 +824,7 @@ export function createPatchFunction(backend) {
         // 添加节点
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
       } else if (isDef(oldCh)) {
-        //3. 旧子节点存在， 全部删除即可
+        // 5. 旧子节点存在，新节点不存在，直接全部删除即可
         removeVnodes(oldCh, 0, oldCh.length - 1);
       } else if (isDef(oldVnode.text)) {
         // 旧节点文本存在-清空
