@@ -124,7 +124,7 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
   return map;
 }
 
-// 创建补丁的函数
+// 创建 patch 的函数
 export function createPatchFunction(backend) {
   let i, j;
   const cbs = {};
@@ -144,6 +144,7 @@ export function createPatchFunction(backend) {
     }
   }
 
+  // 空的vnode
   function emptyNodeAt(elm) {
     return new VNode(
       nodeOps.tagName(elm).toLowerCase(),
@@ -734,14 +735,14 @@ export function createPatchFunction(backend) {
 
   // 两个节点 值得比较，则我们开始比较。
   function patchVnode(
-    oldVnode,
-    vnode,
+    oldVnode, // 旧节点
+    vnode, // 新节点
     insertedVnodeQueue,
     ownerArray,
     index,
     removeOnly
   ) {
-    // 两个节点相同，直接 return
+    // 两个节点完全相同，直接 return
     if (oldVnode === vnode) {
       return;
     }
@@ -766,6 +767,10 @@ export function createPatchFunction(backend) {
     // note we only do this if the vnode is cloned -
     // if the new node is not cloned it means the render functions have been
     // reset by the hot-reload-api and we need to do a proper re-render.
+    //重用静态树的元素。
+    //注意我们只在vnode被克隆时才这样做-
+    //如果新节点没有被克隆，这意味着渲染函数已经被克隆了
+    //被热重载api重置，我们需要做一个适当的重新渲染。
     if (
       isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
@@ -968,9 +973,9 @@ export function createPatchFunction(backend) {
   // 主干逻辑 patch ，滑动到底部，createPatchFunction 函数归根到底返回的是 patch这个函数
   // 四个参数， 旧节点；_render返回的新节点；是否是服务端渲染；removeOnly 是给 transition-group 用的，之后会介绍。
   return function patch(oldVnode, vnode, hydrating, removeOnly) {
-    // 1. 新节点 undeifned
+    // 1. 新节点 是否是undeifned 或者 null
     if (isUndef(vnode)) {
-      // 旧节点 调用销毁钩子
+      // 旧节点存在 调用销毁钩子
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode);
       return;
     }
@@ -978,25 +983,31 @@ export function createPatchFunction(backend) {
     let isInitialPatch = false;
     const insertedVnodeQueue = [];
 
-    // 2.如果旧节点为空
+    // 2.如果旧节点为空，新节点存在
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       // 空挂载(可能作为组件)，创建新的根元素
       isInitialPatch = true;
 
-      // 依据 新节点直接创建 真实dom
+      // 依据 新节点vnode 直接创建 真实dom
       createElm(vnode, insertedVnodeQueue);
     } else {
+      // oldVnode 是不是真实的 DOM 元素
       const isRealElement = isDef(oldVnode.nodeType);
+
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
-        // 如果是 真实的dom
         // patch existing root node
+        // 给现有根节点打补丁
+
+        // 3. 是相似的 vnode，开始深入对比
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly);
       } else {
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
           // a successful hydration.
+
+          /* 服务端渲染的逻辑 */
           if (oldVnode.nodeType === 1 && oldVnode.hasAttribute(SSR_ATTR)) {
             oldVnode.removeAttribute(SSR_ATTR);
             hydrating = true;
@@ -1017,10 +1028,13 @@ export function createPatchFunction(backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
+
+          /* 如果不是服务端，返回一个空的 vnode */
           oldVnode = emptyNodeAt(oldVnode);
         }
 
         // replacing existing element
+        // 4. 替换现有的元素
         const oldElm = oldVnode.elm;
         const parentElm = nodeOps.parentNode(oldElm);
 
@@ -1036,6 +1050,7 @@ export function createPatchFunction(backend) {
         );
 
         // update parent placeholder node element, recursively
+        // 递归地更新父占位符节点元素
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent;
           const patchable = isPatchable(vnode);
@@ -1066,6 +1081,7 @@ export function createPatchFunction(backend) {
         }
 
         // destroy old node
+        // 销毁旧节点
         if (isDef(parentElm)) {
           removeVnodes([oldVnode], 0, 0);
         } else if (isDef(oldVnode.tag)) {
