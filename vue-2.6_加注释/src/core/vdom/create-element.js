@@ -21,20 +21,20 @@ const SIMPLE_NORMALIZE = 1;
 const ALWAYS_NORMALIZE = 2;
 
 // 4. 创建元素节点
-
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
 // 包装函数来提供更多灵活的接口
 // 不会被 flow 处理
 
-// 包裹了 _createElement函数，真正创建元素的方法是 _createElement，开头带下划线，这种写法也很多，类似于后续会遇到的 _render 需要注意。
+// createElement 包裹了 _createElement函数.
+// 真正创建 VNode 的方法是 _createElement.
 export function createElement(
   context: Component, // 当前 组件的 Vue.js 实例。
   tag: any, // 元素的标签
   data: any, // 元素的属性
   children: any, // 当前节点的子节点列表
-  normalizationType: any,
-  alwaysNormalize: boolean
+  normalizationType: any, // normalizationType *英译：标准化 类型*  表示子节点规范的类型，类型不同规范的方法也就不一样，它主要是参考 render 函数是编译生成的还是用户手写的。
+  alwaysNormalize: boolean // *英译：总是 标准的*
 ): VNode | Array<VNode> {
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children;
@@ -53,8 +53,9 @@ export function _createElement(
   tag?: string | Class<Component> | Function | Object, // 节点名称 类似于 p ul li 和 div 等
   data?: VNodeData, // 包含了一些节点上的数据 ； 例如 attrs,class,style;
   children?: any, // 当前节点的子节点列表； [vnode , vnode]
-  normalizationType?: number // ??
+  normalizationType?: number // 标准化的类型，主要是参考 render是编译生成还是用户手写。
 ): VNode | Array<VNode> {
+  // 1. 排除响应式的数据。
   if (isDef(data) && isDef(data.__ob__)) {
     process.env.NODE_ENV !== "production" &&
       warn(
@@ -68,14 +69,18 @@ export function _createElement(
     return createEmptyVNode();
   }
   // object syntax in v-bind
+  // 2. `:is` 语法
   if (isDef(data) && isDef(data.is)) {
     tag = data.is;
   }
+
+  // 3. 没有tag,返回空的VNode
   if (!tag) {
     // in case of component :is set to falsy value
     return createEmptyVNode();
   }
   // warn against non-primitive key
+  // 虚拟节点的 key ，不能为对象。
   if (
     process.env.NODE_ENV !== "production" &&
     isDef(data) &&
@@ -96,6 +101,8 @@ export function _createElement(
     data.scopedSlots = { default: children[0] };
     children.length = 0;
   }
+
+  // 4. 格式化 children   （两种格式化方式）
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children);
   } else if (normalizationType === SIMPLE_NORMALIZE) {
@@ -103,12 +110,12 @@ export function _createElement(
   }
   let vnode, ns;
 
-  // 如果传入的是字符串
+  // 5. 如果 tag 是字符串
   if (typeof tag === "string") {
     let Ctor;
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag);
 
-    //  如果是普通的 html标签
+    //  6. 如果是 html标签
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (
@@ -122,6 +129,8 @@ export function _createElement(
           context
         );
       }
+
+      // 创建元素节点
       vnode = new VNode(
         config.parsePlatformTagName(tag),
         data,
@@ -135,18 +144,20 @@ export function _createElement(
       isDef((Ctor = resolveAsset(context.$options, "components", tag)))
     ) {
       // component
-      // 如果是组件的话
+      // 7. 如果是已注册的组件
       vnode = createComponent(Ctor, data, context, children, tag);
     } else {
       // unknown or unlisted namespaced elements
       // check at runtime because it may get assigned a namespace when its
       // parent normalizes children
+      // 8. 其他情况
       vnode = new VNode(tag, data, children, undefined, undefined, context);
     }
   } else {
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children);
   }
+
   if (Array.isArray(vnode)) {
     return vnode;
   } else if (isDef(vnode)) {
@@ -162,6 +173,7 @@ function applyNS(vnode, ns, force) {
   vnode.ns = ns;
   if (vnode.tag === "foreignObject") {
     // use default namespace inside foreignObject
+    // 在foreignObject中使用默认命名空间
     ns = undefined;
     force = true;
   }
