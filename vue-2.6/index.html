@@ -9,64 +9,20 @@
 <body>
   <div id="app">
   </div>
-
-  <script type="module">
-    import Vue from './dist/vue.esm.browser.js'
-
-    Vue.component('swq', {
-      functional: true,
-      props: ['level'],
-      render (h, { props, data, children }) {
-        return h(`h${props.level}`, data, children)
-      },
-    }
-    )
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+  <script>
+    // new Vue({
+    //   el: '#app',
+    //   template: `<h1>lazy_tomato</h1>`,
+    // })
 
     new Vue({
       el: '#app',
-      template: `
-      <div id='app'>
-        <input type="text" v-model="a.b">
-        <div>a的值： {{a.b}}</div>
-        {{c+d}}
-        --------
-        <swq :level="level">
-          123
-          </swq>
-        <button @click="say">点击我改变 a的值</button>
-      </div>
-      `,
-      data () {
-        return {
-          a: {
-            b: 1
-          },
-          c: 1,
-          d: 1,
-          level: "2"
-        }
+      render: (h) => {
+        return h('h1', 'lazy_tomato')
       },
-      watch: {
-        'a': function (val, oldVal) {
-          console.log('new: %s, old: %s', val, oldVal)
-        },
-      },
-      methods: {
-        say () {
-          this.a.b = "我爱番茄"
-          this.c = "222"
-          this.d = "333"
-        }
-      },
-      // components: {
-      //   swq: swq
-      // }
-
     })
-
-
   </script>
-
 </body>
 
 </html>
