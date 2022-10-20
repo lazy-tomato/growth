@@ -298,7 +298,7 @@ export function defineComputed(
   // 是函数
   if (typeof userDef === "function") {
     sharedPropertyDefinition.get = shouldCache
-      ? createComputedGetter(key) // 需要缓存，不是服务端渲染，计算属性会有花奴才能
+      ? createComputedGetter(key) // 需要缓存，不是服务端渲染，计算属性会有缓存
       : createGetterInvoker(userDef); // 不需要缓存
 
     sharedPropertyDefinition.set = noop;
@@ -344,7 +344,7 @@ function createComputedGetter(key) {
         watcher.evaluate();
       }
 
-      // 手机依赖，用于将读取计算属性的 那个 watcher添加到计算属性所依赖的所有状态的依赖列表。
+      // 收集依赖，用于将读取计算属性的 那个 watcher 添加到计算属性所依赖的所有状态的依赖列表。
       if (Dep.target) {
         watcher.depend();
       }

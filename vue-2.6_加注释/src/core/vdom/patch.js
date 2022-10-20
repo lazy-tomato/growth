@@ -638,19 +638,14 @@ export function createPatchFunction(backend) {
       } else {
         // 5.其他情况
 
-        // ？
+        // 将oldCh数组中未处理的数据转化并存入oldKeyToIdx属性中
         if (isUndef(oldKeyToIdx))
-          // 旧前 旧后 组成的  "节点的key"："节点的索引"
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
-
-        // 新节点是否有key，有key就去oldKeyToIdx中寻找，没有key从旧前到旧后，开始遍历，依次拿 每一项旧节点和新节点对比，对比成功直接返回对应的索引
+        // 如果有key，可以通过key拿到oldKeyToIdx列表中对应的index，如果没有key，则遍历查找index
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
-
         if (isUndef(idxInOld)) {
-          // 5.1 没有索引，说明是全新的节点，直接创建新的元素
-          // New element
           createElm(
             newStartVnode,
             insertedVnodeQueue,
@@ -661,9 +656,11 @@ export function createPatchFunction(backend) {
             newStartIdx
           );
         } else {
-          // 5.2 有key，且相同元素
+          // 获取oldCh中可复用的那个节点
           vnodeToMove = oldCh[idxInOld];
+          // 判断当前处理的节点是否相同
           if (sameVnode(vnodeToMove, newStartVnode)) {
+            // 和顺序对比思路相同，走patchVnode更新
             patchVnode(
               vnodeToMove,
               newStartVnode,
@@ -671,7 +668,9 @@ export function createPatchFunction(backend) {
               newCh,
               newStartIdx
             );
+            // 把旧节点置为undefined
             oldCh[idxInOld] = undefined;
+            // 把要移动的真实DOM插入到下一个需要判断的节点
             canMove &&
               nodeOps.insertBefore(
                 parentElm,
@@ -679,8 +678,7 @@ export function createPatchFunction(backend) {
                 oldStartVnode.elm
               );
           } else {
-            // 有key，不相同元素，视为新元素。
-            // same key but different element. treat as new element
+            // 无法复用，走createElm创建
             createElm(
               newStartVnode,
               insertedVnodeQueue,
@@ -692,6 +690,7 @@ export function createPatchFunction(backend) {
             );
           }
         }
+        // 更新newStartVnode并++newStartIdx
         newStartVnode = newCh[++newStartIdx];
       }
     }
