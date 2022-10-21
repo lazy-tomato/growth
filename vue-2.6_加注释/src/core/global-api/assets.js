@@ -3,6 +3,16 @@
 import { ASSET_TYPES } from "shared/constants";
 import { isPlainObject, validateComponentName } from "../util/index";
 
+/* 
+
+export const ASSET_TYPES = [
+  'component',
+  'directive',
+  'filter'
+]
+
+*/
+
 export function initAssetRegisters(Vue: GlobalAPI) {
   /**
    * Create asset registration methods.
@@ -15,18 +25,18 @@ export function initAssetRegisters(Vue: GlobalAPI) {
       if (!definition) {
         return this.options[type + "s"][id];
       } else {
-        // 自定义组件？？
-
         /* istanbul ignore if */
         if (process.env.NODE_ENV !== "production" && type === "component") {
           validateComponentName(id);
         }
+
+        // 自定义组件
         if (type === "component" && isPlainObject(definition)) {
           definition.name = definition.name || id;
           definition = this.options._base.extend(definition);
         }
 
-        // 自定义指令？？
+        // 自定义指令
         if (type === "directive" && typeof definition === "function") {
           definition = { bind: definition, update: definition };
         }

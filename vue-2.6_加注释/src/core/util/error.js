@@ -49,10 +49,10 @@ export function invokeWithErrorHandling(
 ) {
   let res;
   try {
-    // 有参数？ 调用 handler this指向为vm实例，
+    // 调用 handler this指向为第二个参数context（vm实例）
     res = args ? handler.apply(context, args) : handler.call(context);
 
-    // 如果函数存在返回值，而且返回值是 promise，给他价catch处理
+    // 如果函数存在返回值，而且返回值是 promise，给他加catch处理
     if (res && !res._isVue && isPromise(res) && !res._handled) {
       res.catch((e) => handleError(e, vm, info + ` (Promise/async)`));
       // issue #9511

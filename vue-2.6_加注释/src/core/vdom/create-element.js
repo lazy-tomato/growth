@@ -141,6 +141,7 @@ export function _createElement(
       );
     } else if (
       (!data || !data.pre) &&
+      // 注册组件
       isDef((Ctor = resolveAsset(context.$options, "components", tag)))
     ) {
       // component

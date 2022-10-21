@@ -56,10 +56,18 @@ export function initGlobalAPI(Vue: GlobalAPI) {
     return obj;
   };
 
+  // 配置其实是在这里初始化的，默认一个空对象
   Vue.options = Object.create(null);
   ASSET_TYPES.forEach((type) => {
     Vue.options[type + "s"] = Object.create(null);
   });
+  /* 
+  ASSET_TYPES   [
+                  'component',
+                  'directive',
+                  'filter'
+                ]
+  */
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
@@ -68,10 +76,13 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   //  @tomato, 这就对应 创建组件中的 vm.$options._base 取值的出处了。 （当然，options是vue原本的配置，而$options存储的是，用户配置合并之后的配置）
   Vue.options._base = Vue;
 
+  // extend就是把 b的属性给a  目前 builtInComponents有这些内置组件 <keep-alive>、<transition> 和 <transition-group>
   extend(Vue.options.components, builtInComponents);
 
   initUse(Vue);
   initMixin(Vue);
   initExtend(Vue);
+
+  // 初始化资源注册
   initAssetRegisters(Vue);
 }

@@ -28,6 +28,7 @@ import {
 
 // inline hooks to be invoked on component VNodes during patch
 const componentVNodeHooks = {
+  // 在后续 patch中的创建元素中，会触发 init
   init(vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
@@ -42,6 +43,8 @@ const componentVNodeHooks = {
         vnode,
         activeInstance
       ));
+
+      // 这就是组件不需要挂载的原因， hydrating表示是服务端渲染，暂时不用考虑。
       child.$mount(hydrating ? vnode.elm : undefined, hydrating);
     }
   },
@@ -58,10 +61,12 @@ const componentVNodeHooks = {
     );
   },
 
+  // 页面挂载完毕了
   insert(vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode;
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true;
+      // 通知挂载
       callHook(componentInstance, "mounted");
     }
     if (vnode.data.keepAlive) {
@@ -111,8 +116,9 @@ export function createComponent(
   // plain options object: turn it into a constructor
   // 普通选项对象:将其转换为构造函数
 
-  // 我们创建一个组件的时候，通常创建的是一个普通对象，所以会走这里，将其转换为构造函数
+  // 我们创建一个组件的时候，通常创建的是一个普通对象，export default所以会走这里，将其转换为构造函数
   if (isObject(Ctor)) {
+    // src/core/global-api/extend.js
     Ctor = baseCtor.extend(Ctor);
   }
 
@@ -125,6 +131,7 @@ export function createComponent(
     return;
   }
 
+  /* 异步组件的逻辑 */
   // async component
   let asyncFactory;
   if (isUndef(Ctor.cid)) {
@@ -177,9 +184,11 @@ export function createComponent(
   }
 
   // install component management hooks onto the placeholder node
+  // 安装组件钩子
   installComponentHooks(data);
 
   // return a placeholder vnode
+  // 组件的 vnode 是没有 children 的,这点很关键，在之后的 patch 过程中我们会再提
   const name = Ctor.options.name || tag;
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ""}`,
@@ -201,6 +210,16 @@ export function createComponent(
   }
 
   return vnode;
+
+  /* 
+  
+  createComponent 的实现，了解到它在渲染一个组件的时候的 3 个关键逻辑：
+  1. 构造子类构造函数，
+  2.安装组件钩子函数
+  3.实例化 vnode。
+  createComponent 后返回的是组件 vnode，它也一样走到 vm._update 方法，进而执行了 patch 函数。
+    
+  */
 }
 
 export function createComponentInstanceForVnode(
@@ -210,9 +229,9 @@ export function createComponentInstanceForVnode(
   parent: any
 ): Component {
   const options: InternalComponentOptions = {
-    _isComponent: true,
-    _parentVnode: vnode,
-    parent,
+    _isComponent: true, // 是组件
+    _parentVnode: vnode, // 当前激活的实例
+    parent, // 当前激活的实例
   };
   // check inline-template render functions
   const inlineTemplate = vnode.data.inlineTemplate;
@@ -220,9 +239,19 @@ export function createComponentInstanceForVnode(
     options.render = inlineTemplate.render;
     options.staticRenderFns = inlineTemplate.staticRenderFns;
   }
+
+  // vnode.componentOptions.Ctor 相当于继承于Vue的构造函数 Sub， 子组件的init就是这里触发的。
   return new vnode.componentOptions.Ctor(options);
 }
 
+/* 
+
+整个 installComponentHooks 的过程就是把 componentVNodeHooks 的钩子函数合并到 data.hook 中，
+在 VNode 执行 patch 的过程中执行相关的钩子函数，具体的执行我们稍后在介绍 patch 过程中会详细介绍。
+这里要注意的是合并策略，在合并过程中，如果某个时机的钩子已经存在 data.hook 中，那么通过执行 mergeHook 函数做合并，这个逻辑很简单，
+就是在最终执行的时候，依次执行这两个钩子函数即可。
+
+*/
 function installComponentHooks(data: VNodeData) {
   const hooks = data.hook || (data.hook = {});
   for (let i = 0; i < hooksToMerge.length; i++) {

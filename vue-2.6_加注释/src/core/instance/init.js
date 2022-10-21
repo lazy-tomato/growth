@@ -38,11 +38,16 @@ export function initMixin(Vue: Class<Component>) {
     vm._isVue = true;
 
     // merge options
-    // 3. 主要操作就是合并配置options 到  vm.$options
+    // 3. 下方的 `if`,主要操作就是合并配置options 到  vm.$options
+
+    // _isComponent为true 表示是组件。
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
+      // 优化内部组件实例化
+      // 因为动态选项合并非常慢，而且没有
+      // 内部组件选项需要特殊处理。
       initInternalComponent(vm, options);
     } else {
       vm.$options = mergeOptions(
@@ -93,22 +98,29 @@ export function initMixin(Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag);
     }
 
-    // ！！！如果元素存在，就开始挂载
+    // ！！！如果元素存在，就开始挂载 （第一次需要手动挂载，后续`vm.$options.el` ,不传元素，为组件，组件是自动挂载`\src\core\vdom\create-component.js` init中的最后一句）
     if (vm.$options.el) {
       vm.$mount(vm.$options.el);
     }
   };
 }
 
+// 初始化内部组件
 export function initInternalComponent(
   vm: Component,
   options: InternalComponentOptions
 ) {
+  //下方代码等同于  vm.$options = Object.create(Sub.options)
   const opts = (vm.$options = Object.create(vm.constructor.options));
+
   // doing this because it's faster than dynamic enumeration.
   const parentVnode = options._parentVnode;
+
+  /* 1 子组件父 Vue 实例*/
   opts.parent = options.parent;
+  /* 2 子组件父 VNode 实例*/
   opts._parentVnode = parentVnode;
+  /* 3. 它们是把之前我们通过 createComponentInstanceForVnode 函数传入的几个参数合并到内部的选项 $options 里了。 */
 
   const vnodeComponentOptions = parentVnode.componentOptions;
   opts.propsData = vnodeComponentOptions.propsData;

@@ -399,7 +399,11 @@ function assertObjectType(name: string, value: any, vm: ?Component) {
 /**
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
+ * 将两个选项对象合并为一个新的。
+ * 在实例化和继承中使用的核心实用程序。
  */
+
+// mergeOptions 主要功能就是把 parent 和 child 这两个对象根据一些合并策略，合并成一个新对象并返回。
 export function mergeOptions(
   parent: Object,
   child: Object,
@@ -421,6 +425,8 @@ export function mergeOptions(
   // but only if it is a raw options object that isn't
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
+
+  // 先递归把 extends 和 mixins 合并到 parent
   if (!child._base) {
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm);
@@ -442,6 +448,8 @@ export function mergeOptions(
       mergeField(key);
     }
   }
+
+  //
   function mergeField(key) {
     const strat = strats[key] || defaultStrat;
     options[key] = strat(parent[key], child[key], vm, key);
@@ -458,7 +466,7 @@ export function mergeOptions(
  * 到其祖先链中定义的资产。
  */
 
-// 查找过滤器等数据
+// 查找 组件，过滤器等数据
 export function resolveAsset(
   options: Object,
   type: string,

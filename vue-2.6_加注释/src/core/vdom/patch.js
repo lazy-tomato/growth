@@ -213,6 +213,8 @@ export function createPatchFunction(backend) {
     }
 
     vnode.isRootInsert = !nested; // for transition enter check
+
+    // 如果是组件，去初始化组件，不是组件就是普通的元素
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return;
     }
@@ -241,7 +243,7 @@ export function createPatchFunction(backend) {
         }
       }
 
-      // 创建元素，跨平台的
+      // 创建元素，跨平台的 （主要逻辑，先创建父元素，后续递归创建子元素）
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode);
@@ -295,8 +297,12 @@ export function createPatchFunction(backend) {
 
   function createComponent(vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data;
+
+    // 首先对 vnode.data做判断，如果是 vnode
     if (isDef(i)) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
+
+      //  i 就是 init 钩子函数
       if (isDef((i = i.hook)) && isDef((i = i.init))) {
         i(vnode, false /* hydrating */);
       }
@@ -843,6 +849,10 @@ export function createPatchFunction(backend) {
   function invokeInsertHook(vnode, queue, initial) {
     // delay insert hooks for component root nodes, invoke them after the
     // element is really inserted
+    // 延迟组件根节点的插入钩子，在
+    // 元素被真正插入
+
+    // 组件的 insert 是在初始化组件的时候初始化的
     if (isTrue(initial) && isDef(vnode.parent)) {
       vnode.parent.data.pendingInsert = queue;
     } else {

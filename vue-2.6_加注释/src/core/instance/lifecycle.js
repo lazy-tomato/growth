@@ -22,6 +22,7 @@ export let activeInstance: any = null;
 export let isUpdatingChildComponent: boolean = false;
 
 export function setActiveInstance(vm: Component) {
+  // prevActiveInstance 和当前的 vm 是一个父子关系
   const prevActiveInstance = activeInstance;
   activeInstance = vm;
   return () => {
@@ -68,6 +69,8 @@ export function lifecycleMixin(Vue: Class<Component>) {
     const vm: Component = this;
     const prevEl = vm.$el;
     const prevVnode = vm._vnode;
+
+    // 设置当前激活的实例
     const restoreActiveInstance = setActiveInstance(vm);
     vm._vnode = vnode;
     // Vue.prototype.__patch__ is injected in entry points
@@ -426,6 +429,7 @@ export function deactivateChildComponent(vm: Component, direct?: boolean) {
 // 回调函数钩子
 export function callHook(vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
+  // 在调用生命周期钩子时禁用dep收集
   pushTarget();
   const handlers = vm.$options[hook];
   const info = `${hook} hook`;
