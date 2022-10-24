@@ -149,6 +149,8 @@ export default class Watcher {
 
       // 9. 收集完依赖之后,删除当前依赖
       popTarget();
+
+      // 10. 清空的逻辑 （每当数据改变，重新执行 _render, 就会有新的dep加入到数组。虽然set保证了dep不会重复，但是有的dep不需要监听了，需要定时清除）
       this.cleanupDeps();
     }
     return value;
@@ -181,7 +183,7 @@ export default class Watcher {
    * 清理依赖项收集。
    */
 
-  // 感觉是清除旧的依赖
+  // 清除旧的依赖
   cleanupDeps() {
     let i = this.deps.length; // 存储 deps
     while (i--) {
