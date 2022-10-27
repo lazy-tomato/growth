@@ -127,8 +127,8 @@ export default class Watcher {
       // 8.
 
       /* 
-      1.执行 this.getter
-      2.渲染的时候，实际执行的是： () => {vm._update(vm._render(), hydrating);};
+      1. 执行 this.getter
+      2. 渲染的时候，实际执行的是： () => {vm._update(vm._render(), hydrating);};
       3. vm._render()会获取 data 的值，触发了数据的 get ,从而实现依赖收集
       */
       value = this.getter.call(vm, vm);

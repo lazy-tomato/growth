@@ -3,31 +3,46 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Document</title>
+  <title>lazy_tomato</title>
 </head>
 
 <body>
-
   <div id="app">
-    <input type="text" v-model="b.d.e" class="swq">
+    <div>firstName{{ firstName }}</div>
+    <div>lastName{{ lastName }}</div>
+    <div>fullName{{ fullName }}</div>
   </div>
-
-  <!-- 我引入的是 ES Module + dev版本的Vue，所以需要说明 type="module" -->
-  <script type="module">
-    import Vue from './vue.esm.browser.js'
-    var a = new Vue({
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+  <script>
+    new Vue({
       el: '#app',
       data () {
         return {
-          a: 1,
-          b: { c: 123, d: { e: 123 } }
+          firstName: '番茄',
+          lastName: '好吃',
         }
       },
+      computed: {
+        fullName: {
+          // getter
+          get: function () {
+            return this.firstName + '-' + this.lastName
+          },
+          // setter
+          set: function (newValue) {
+            var names = newValue.split('-')
+            this.firstName = names[0]
+            this.lastName = names[names.length - 1]
+          },
+        },
+      },
+      mounted () {
+        setTimeout(() => {
+          this.fullName = '西红柿-好'
+        }, 3000)
+      },
     })
-
-    console.log(a)
   </script>
-
 </body>
 
 </html>
