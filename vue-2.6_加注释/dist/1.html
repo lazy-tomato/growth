@@ -8,39 +8,30 @@
 
 <body>
   <div id="app">
-    <div>firstName{{ firstName }}</div>
-    <div>lastName{{ lastName }}</div>
-    <div>fullName{{ fullName }}</div>
+    <div>{{ tomato }}</div>
+    <h2 @click="swq">123</h2>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script> -->
+  <script src="./vue.js"></script>
+
   <script>
     new Vue({
       el: '#app',
       data () {
         return {
-          firstName: '番茄',
-          lastName: '好吃',
+          name: '番茄',
         }
       },
       computed: {
-        fullName: {
-          // getter
-          get: function () {
-            return this.firstName + '-' + this.lastName
-          },
-          // setter
-          set: function (newValue) {
-            var names = newValue.split('-')
-            this.firstName = names[0]
-            this.lastName = names[names.length - 1]
-          },
+        tomato () {
+          return this.name + '---好吃'
         },
       },
-      mounted () {
-        setTimeout(() => {
-          this.fullName = '西红柿-好'
-        }, 3000)
-      },
+      methods: {
+        swq () {
+          this.name = 123
+        }
+      }
     })
   </script>
 </body>
