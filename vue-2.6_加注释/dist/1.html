@@ -8,11 +8,13 @@
 
 <body>
   <div id="app">
-    <div>{{ tomato }}</div>
+    <input type="text" v-model="a.b.c">
+
+    <h3>{{ a.b.c }}</h3>
     <h2 @click="swq">123</h2>
   </div>
   <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.7.10/dist/vue.js"></script> -->
-  <script src="./vue.js"></script>
+  <script src="./vue.common.dev.js"></script>
 
   <script>
     new Vue({
@@ -20,6 +22,11 @@
       data () {
         return {
           name: '番茄',
+          a: {
+            b: {
+              c: "123213213"
+            }
+          }
         }
       },
       computed: {
@@ -30,6 +37,10 @@
       methods: {
         swq () {
           this.name = 123
+
+          this.$set(this.a, 'b', {})
+
+
         }
       }
     })
